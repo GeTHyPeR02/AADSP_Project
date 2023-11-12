@@ -3,108 +3,138 @@
 #include <string.h>
 #include <math.h>
 #include "WAVheader.h"
+#include "iir.h"
 
 #define BLOCK_SIZE 16
 #define MAX_NUM_CHANNEL 8
 
 // Number of channels
-#define INPUT_NUM_CHANNELS 2
-#define OUTPUT_NUM_CHANNELS 3
+#define INPUT_NUM_CHANNELS 1
+#define OUTPUT_NUM_CHANNELS 6
 
-// Channel IDs. 
-// Should input and output channel IDs be separated?
+// Channel IDs
 #define LEFT_CH 0
-#define RIGHT_CH 1
-#define CENTER_CH 2
+#define CENTER_CH 1
+#define LEFT_SIDE_CH 2
+#define RIGHT_SIDE_CH 3
+#define RIGHT_CH 4
+#define LFE_CH 5
 
-// Gain linear values. 
-#define PLUS_6DB 1.99526
-#define MINUS_2DB 0.794328
-#define MINUS_4DB 0.630957
-#define MINUS_12DB 0.251189 
+// Gain linear values
+#define MINUS_3DB 0.707946
+
+// Filter coeficients
+static double lpf_18k_coefs[] = { (0.6828), (1.3657), (0.6828), (1.0), (1.1314), (0.6) };
+static double hpf_800_coefs[] = { (0.9617), (-1.9234), (0.9617), (1.0), (-1.9182), (0.9287) };
+static double bpf_coefs[] = { (0.4139), (0.0), (-0.4139), (1.0), (-0.6384), (0.1722) };
+static double bpf2_coefs[] = { (0.4139), (0.0), (-0.4139), (1.0), (-0.6384), (0.1722) };
+static double hpf2_800_coefs[] = { (0.9617), (-1.9234), (0.9617), (1.0), (-1.9182), (0.9287) };
+static double lpf2_18k_coefs[] = { (0.6828), (1.3657), (0.6828), (1.0), (1.1314), (0.6) };
+
+// History
+static double lpf_x_history[2];
+static double lpf_y_history[2];
+static double hpf_x_history[2];
+static double hpf_y_history[2];
+static double bpf_x_history[2];
+static double bpf_y_history[2];
+static double bpf2_x_history[2];
+static double bpf2_y_history[2];
+static double hpf2_x_history[2];
+static double hpf2_y_history[2];
+static double lpf2_x_history[2];
+static double lpf2_y_history[2];
 
 // IO Buffers
 static double sampleBuffer[MAX_NUM_CHANNEL][BLOCK_SIZE];
 
+// Controls
+static int enable = 1;
+static int mode = 0;
+
 // Processing related variables
-static double preGain;
-static double postGain;
-static double variablesGain[INPUT_NUM_CHANNELS];
-static double limiterThreshold = 0.999;
+static double preGain1 = MINUS_3DB;
+static double preGain2 = MINUS_3DB;
+static double variableGains[INPUT_NUM_CHANNELS];
 
-void initGainProcessing(double preGainValue, double* defaultVariablesGain, double postGainValue)
+void processing()
 {
-	preGain = preGainValue;
-	for (int i = 0; i < INPUT_NUM_CHANNELS; i++)
-	{
-		variablesGain[i] = defaultVariablesGain[i];
-	}
-	postGain = postGainValue;
-}
-
-double saturation(double in, double threshold)
-{
-	// Simple limiter since we know that pre-Gain adds 6dB
-	if (in > threshold)
-	{
-		return fmin(in, threshold);
-	}
-	else if (in < -threshold)
-	{
-		return fmax(in, -threshold);
-	}
-
-	return in;
-}
-
-void gainProcessing(double pIn[][BLOCK_SIZE], double pOut[][BLOCK_SIZE], const double LchGain, const double RchGain, double* variableGains, const double CchGain, int noInputChannels, int nSamples)
-{
-	double preGains[INPUT_NUM_CHANNELS] = { LchGain, RchGain };
-	double postGain = CchGain;
-
-	for (int i = 0; i < noInputChannels; i++)
-	{
-		for (int j = 0; j < nSamples; j++)
+	int i;
+	
+	if (!mode) {
+		for (i = 0; i < BLOCK_SIZE; i++)
 		{
-			// first stage, apply constant pre-Gain
-			pIn[i][j] = pIn[i][j] * preGains[i];
-			// second stage, apply variable gain
-			pOut[i][j] = saturation(pIn[i][j] * variableGains[i], limiterThreshold);
-			// add processed sampled to the center output channel
-			pOut[CENTER_CH][j] += pOut[i][j];
-			// apply center channel post-Gain
-			pOut[CENTER_CH][j] *= postGain;
+			sampleBuffer[CENTER_CH][i] = preGain1 * second_order_IIR(sampleBuffer[LEFT_CH][i], lpf_18k_coefs, lpf_x_history, lpf_y_history);
+			sampleBuffer[LEFT_SIDE_CH][i] = preGain1 * second_order_IIR(sampleBuffer[LEFT_CH][i], hpf_800_coefs, hpf_x_history, hpf_y_history);
+			sampleBuffer[RIGHT_SIDE_CH][i] = preGain2 * second_order_IIR(sampleBuffer[LEFT_CH][i], bpf_coefs, bpf_x_history, bpf_y_history);
+			sampleBuffer[RIGHT_CH][i] = preGain2 * second_order_IIR(sampleBuffer[LEFT_CH][i], bpf2_coefs, bpf2_x_history, bpf2_y_history);
+			sampleBuffer[LFE_CH][i] = preGain2 * second_order_IIR(sampleBuffer[LEFT_CH][i], hpf2_800_coefs, hpf2_x_history, hpf2_y_history);
+			sampleBuffer[LEFT_CH][i] = preGain1 * sampleBuffer[LEFT_CH][i];
+		}
+	}
+	else{
+		for (i = 0; i < BLOCK_SIZE; i++)
+		{
+			sampleBuffer[CENTER_CH][i] = preGain1 * second_order_IIR(sampleBuffer[LEFT_CH][i], hpf_800_coefs, hpf_x_history, hpf_y_history);
+			sampleBuffer[LEFT_SIDE_CH][i] = preGain1 * second_order_IIR(sampleBuffer[LEFT_CH][i], bpf_coefs, bpf_x_history, bpf_y_history);
+			sampleBuffer[RIGHT_SIDE_CH][i] = preGain2 * second_order_IIR(sampleBuffer[LEFT_CH][i], bpf2_coefs, bpf2_x_history, bpf2_y_history);
+			sampleBuffer[RIGHT_CH][i] = preGain2 * second_order_IIR(sampleBuffer[LEFT_CH][i], hpf2_800_coefs, hpf2_x_history, hpf2_y_history);
+			sampleBuffer[LFE_CH][i] = preGain2 * second_order_IIR(sampleBuffer[LEFT_CH][i], lpf2_18k_coefs, lpf2_x_history, lpf2_y_history);
+			sampleBuffer[LEFT_CH][i] = preGain1 * second_order_IIR(sampleBuffer[LEFT_CH][i], lpf_18k_coefs, lpf_x_history, lpf_y_history);
+		}
+	}
+}
+
+
+int main(int argc, char* argv[])
+{
+	if (argc < 3 || argc > 7) {
+		printf("Wrong number of arguments\n");
+		printf("Argument example: %s INPUT OUTPUT [Enable] [Mode] [Gain1] [Gain2]\n", argv[0]);
+		return -1;
+	}
+
+	// preGain2
+	if (argc > 6) {
+		double gain2_db = atof(argv[6]);
+		if (gain2_db <= 0) {
+			preGain2 = gain2_db;
+		}
+		else {
+			preGain2 = 0;
 		}
 	}
 
-	// TODO: remove upper implementation and implement processing for each channel indepenetnly 
-	// (without outter noInputChannels loop, but only with inner nSamples loop)
-	// (kick-out any unnecessary local variables and parameters)
-}
+	// preGain1
+	if (argc > 5) {
+		double gain1_db = atof(argv[5]);
+		if (gain1_db <= 0) {
+			preGain1 = gain1_db;
+		}
+		else {
+			preGain1 = 0;
+		}
+	}
 
-/////////////////////////////////////////////////////////////////////////////////
-// @Author	<student name>
-// @Date		<date>  
-//
-// Function:
-// main
-//
-// @param - argv[0] - Input file name
-//        - argv[1] - Output file name
-// @return - nothing
-// Comment: main routine of a program
-//
-// E-mail:	<email>
-//
-/////////////////////////////////////////////////////////////////////////////////
-int main(int argc, char* argv[])
-{
+	// Check mode
+	if (argc > 4) {
+		if (strcmp(argv[4], "0") != 0) {
+			mode = 1;
+		}
+	}
+
+	// Enable
+	if (argc > 3) {
+		if (strcmp(argv[3], "0") == 0) {
+			enable = 0;
+		}
+	}
+
 	FILE* wav_in = NULL;
 	FILE* wav_out = NULL;
 	char WavInputName[256];
 	char WavOutputName[256];
 	WAV_HEADER inputWAVhdr, outputWAVhdr;
-	double defaultVariablesGain[INPUT_NUM_CHANNELS] = { MINUS_4DB , MINUS_2DB }; // -2dB, -4dB
 
 	// Init channel buffers
 	for (int i = 0; i < MAX_NUM_CHANNEL; i++)
@@ -141,7 +171,6 @@ int main(int argc, char* argv[])
 	//-------------------------------------------------
 	WriteWavHeader(wav_out, outputWAVhdr);
 
-	initGainProcessing(PLUS_6DB, defaultVariablesGain, MINUS_12DB);
 
 	// Processing loop
 	//-------------------------------------------------	
@@ -161,17 +190,18 @@ int main(int argc, char* argv[])
 					sample = 0; //debug
 					fread(&sample, BytesPerSample, 1, wav_in);
 					sample = sample << (32 - inputWAVhdr.fmt.BitsPerSample); // force signextend
-					sampleBuffer[k][j] = sample / SAMPLE_SCALE;				// scale sample to 1.0/-1.0 range		
+					sampleBuffer[k][j] = sample / SAMPLE_SCALE;				 // scale sample to 1.0/-1.0 range		
 				}
 			}
-
-			gainProcessing(sampleBuffer, sampleBuffer, preGain, preGain, variablesGain, postGain, INPUT_NUM_CHANNELS, BLOCK_SIZE);
+			if (enable) {
+				processing();
+			}
 
 			for (int j = 0; j < BLOCK_SIZE; j++)
 			{
 				for (int k = 0; k < outputWAVhdr.fmt.NumChannels; k++)
 				{
-					sample = sampleBuffer[k][j] * SAMPLE_SCALE;	// crude, non-rounding 			
+					sample = sampleBuffer[k][j] * SAMPLE_SCALE;		// crude, non-rounding 			
 					sample = sample >> (32 - inputWAVhdr.fmt.BitsPerSample);
 					fwrite(&sample, outputWAVhdr.fmt.BitsPerSample / 8, 1, wav_out);
 				}

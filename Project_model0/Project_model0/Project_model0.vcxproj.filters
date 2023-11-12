@@ -21,9 +21,15 @@
     <ClCompile Include="WAVheader.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="iir.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="WAVheader.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="iir.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
