@@ -12,17 +12,21 @@
 
 double second_order_IIR(double input, double* coefficients, double* x_history, double* y_history) {
 	double output = 0;
+	double* x = x_history;
+	double* y = y_history;
 
-	output += coefficients[0] * input;        /* A0 * x(n)   */
-	output += coefficients[1] * x_history[0]; /* A1 * x(n-1) */
-	output += coefficients[2] * x_history[1]; /* A2 * x(n-2) */
-	output -= coefficients[4] * y_history[0]; /* B1 * y(n-1) */
-	output -= coefficients[5] * y_history[1]; /* B2 * y(n-2) */
+	output += *(coefficients++) * input;  /* A0 * x(n)   */
+	output += *(coefficients++) * *(x++); /* A1 * x(n-1) */
+	output += *(coefficients++) * *(x); /* A2 * x(n-2) */
+	coefficients++;
+	output -= *(coefficients++) * *(y++); /* B1 * y(n-1) */
+	output -= *(coefficients++) * *(y); /* B2 * y(n-2) */
 
-	y_history[1] = y_history[0];    /* y(n-2) = y(n-1) */
-	y_history[0] = output;          /* y(n-1) = y(n)   */
-	x_history[1] = x_history[0];    /* x(n-2) = x(n-1) */
-	x_history[0] = input;           /* x(n-1) = x(n)   */
+	*y = *y_history;       /* y(n-2) = y(n-1) */
+	*y_history = output;   /* y(n-1) = y(n)   */
+	*x = *x_history;       /* x(n-2) = x(n-1) */
+	*x_history = input;    /* x(n-1) = x(n)   */
+
 
 	return output;
 }

@@ -50,12 +50,11 @@ static double sampleBuffer[MAX_NUM_CHANNEL][BLOCK_SIZE];
 
 // Controls
 static int enable = 1;
-static int mode = 0;
+static int mode = 1;
 
 // Processing related variables
 static double preGain1 = MINUS_3DB;
 static double preGain2 = MINUS_3DB;
-static double variableGains[INPUT_NUM_CHANNELS];
 
 void processing()
 {
@@ -93,7 +92,7 @@ void processing()
 			*sampleBuffer_rightSide = second_order_IIR(preGain2 * *sampleBuffer_left, bpf2_coefs, bpf2_x_history, bpf2_y_history);
 			*sampleBuffer_right = second_order_IIR(preGain2 * *sampleBuffer_left, hpf2_800_coefs, hpf2_x_history, hpf2_y_history);
 			*sampleBuffer_lfe = second_order_IIR(preGain2 * *sampleBuffer_left, lpf2_18k_coefs, lpf2_x_history, lpf2_y_history);
-			*sampleBuffer_left = preGain1 * second_order_IIR(preGain1 * *sampleBuffer_left, lpf_18k_coefs, lpf_x_history, lpf_y_history);
+			*sampleBuffer_left = second_order_IIR(preGain1 * *sampleBuffer_left, lpf_18k_coefs, lpf_x_history, lpf_y_history);
 
 			sampleBuffer_center++;
 			sampleBuffer_leftSide++;
