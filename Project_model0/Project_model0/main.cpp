@@ -24,12 +24,12 @@
 #define MINUS_3DB 0.707946
 
 // Filter coeficients
-static double lpf_18k_coefs[] = { (0.6828), (1.3657), (0.6828), (1.0), (1.1314), (0.6) };
-static double hpf_800_coefs[] = { (0.9617), (-1.9234), (0.9617), (1.0), (-1.9182), (0.9287) };
+static double lpf_18k_coefs[] = { (0.6632), (1.3264), (0.6632), (1.0), (1.2095), (0.4432) };
+static double hpf_800_coefs[] = { (0.9223), (-1.8447), (0.9223), (1.0), (-1.8391), (0.8511) };
 static double bpf_coefs[] = { (0.4139), (0.0), (-0.4139), (1.0), (-0.6384), (0.1722) };
 static double bpf2_coefs[] = { (0.4139), (0.0), (-0.4139), (1.0), (-0.6384), (0.1722) };
-static double hpf2_800_coefs[] = { (0.9617), (-1.9234), (0.9617), (1.0), (-1.9182), (0.9287) };
-static double lpf2_18k_coefs[] = { (0.6828), (1.3657), (0.6828), (1.0), (1.1314), (0.6) };
+static double hpf2_800_coefs[] = { (0.9223), (-1.8447), (0.9223), (1.0), (-1.8391), (0.8511) };
+static double lpf2_18k_coefs[] = { (0.6632), (1.3264), (0.6632), (1.0), (1.2095), (0.4432) };
 
 // History
 static double lpf_x_history[2];
@@ -55,7 +55,25 @@ static int mode = 0;
 // Processing related variables
 static double preGain1 = MINUS_3DB;
 static double preGain2 = MINUS_3DB;
-static double variableGains[INPUT_NUM_CHANNELS];
+
+void initHistory()
+{
+	for (int i = 0; i < 2; i++)
+	{
+		lpf_x_history[i] = 0;
+		lpf_y_history[i] = 0;
+		hpf_x_history[i] = 0;
+		hpf_y_history[i] = 0;
+		bpf_x_history[i] = 0;
+		bpf_y_history[i] = 0;
+		lpf2_x_history[i] = 0;
+		lpf2_y_history[i] = 0;
+		hpf2_x_history[i] = 0;
+		hpf2_y_history[i] = 0;
+		bpf2_x_history[i] = 0;
+		bpf2_y_history[i] = 0;
+	}
+}
 
 void processing()
 {
@@ -139,6 +157,8 @@ int main(int argc, char* argv[])
 	// Init channel buffers
 	for (int i = 0; i < MAX_NUM_CHANNEL; i++)
 		memset(&sampleBuffer[i], 0, BLOCK_SIZE);
+
+	initHistory();
 
 	// Open input and output wav files
 	//-------------------------------------------------
