@@ -56,6 +56,27 @@ static int mode = 1;
 static double preGain1 = MINUS_3DB;
 static double preGain2 = MINUS_3DB;
 
+
+void init_history()
+{
+	for (int i = 0; i < 2; i++)
+	{
+		lpf_x_history[i] = 0;
+		lpf_y_history[i] = 0;
+		hpf_x_history[i] = 0;
+		hpf_y_history[i] = 0;
+		bpf_x_history[i] = 0;
+		bpf_y_history[i] = 0;
+		lpf2_x_history[i] = 0;
+		lpf2_y_history[i] = 0;
+		hpf2_x_history[i] = 0;
+		hpf2_y_history[i] = 0;
+		bpf2_x_history[i] = 0;
+		bpf2_y_history[i] = 0;
+	}
+}
+
+
 void processing()
 {
 	int i;
@@ -85,7 +106,7 @@ void processing()
 		}
 	}
 	else{
-		for (i = 0; i < BLOCK_SIZE; i++)
+ 		for (i = 0; i < BLOCK_SIZE; i++)
 		{
 			*sampleBuffer_center = second_order_IIR(preGain1 * *sampleBuffer_left, hpf_800_coefs, hpf_x_history, hpf_y_history);
 			*sampleBuffer_leftSide = second_order_IIR(preGain1 * *sampleBuffer_left, bpf_coefs, bpf_x_history, bpf_y_history);
@@ -213,6 +234,7 @@ int main(int argc, char* argv[])
 				}
 			}
 			if (enable) {
+				init_history();
 				processing();
 			}
 
@@ -225,6 +247,7 @@ int main(int argc, char* argv[])
 					fwrite(&sample, outputWAVhdr.fmt.BitsPerSample / 8, 1, wav_out);
 				}
 			}
+			fflush(wav_out);
 		}
 	}
 
