@@ -82,23 +82,23 @@ void processing()
 	if (!mode) {
 		for (i = 0; i < BLOCK_SIZE; i++)
 		{
-			sampleBuffer[CENTER_CH][i] = preGain1 * second_order_IIR(sampleBuffer[LEFT_CH][i], lpf_18k_coefs, lpf_x_history, lpf_y_history);
-			sampleBuffer[LEFT_SIDE_CH][i] = preGain1 * second_order_IIR(sampleBuffer[LEFT_CH][i], hpf_800_coefs, hpf_x_history, hpf_y_history);
-			sampleBuffer[RIGHT_SIDE_CH][i] = preGain2 * second_order_IIR(sampleBuffer[LEFT_CH][i], bpf_coefs, bpf_x_history, bpf_y_history);
-			sampleBuffer[RIGHT_CH][i] = preGain2 * second_order_IIR(sampleBuffer[LEFT_CH][i], bpf2_coefs, bpf2_x_history, bpf2_y_history);
-			sampleBuffer[LFE_CH][i] = preGain2 * second_order_IIR(sampleBuffer[LEFT_CH][i], hpf2_800_coefs, hpf2_x_history, hpf2_y_history);
+			sampleBuffer[CENTER_CH][i] = second_order_IIR(preGain1 * sampleBuffer[LEFT_CH][i], lpf_18k_coefs, lpf_x_history, lpf_y_history);
+			sampleBuffer[LEFT_SIDE_CH][i] = second_order_IIR(preGain1 * sampleBuffer[LEFT_CH][i], hpf_800_coefs, hpf_x_history, hpf_y_history);
+			sampleBuffer[RIGHT_SIDE_CH][i] = second_order_IIR(preGain2 * sampleBuffer[LEFT_CH][i], bpf_coefs, bpf_x_history, bpf_y_history);
+			sampleBuffer[RIGHT_CH][i] = second_order_IIR(preGain2 * sampleBuffer[LEFT_CH][i], bpf2_coefs, bpf2_x_history, bpf2_y_history);
+			sampleBuffer[LFE_CH][i] = second_order_IIR(preGain2 * sampleBuffer[LEFT_CH][i], hpf2_800_coefs, hpf2_x_history, hpf2_y_history);
 			sampleBuffer[LEFT_CH][i] = preGain1 * sampleBuffer[LEFT_CH][i];
 		}
 	}
 	else{
 		for (i = 0; i < BLOCK_SIZE; i++)
 		{
-			sampleBuffer[CENTER_CH][i] = preGain1 * second_order_IIR(sampleBuffer[LEFT_CH][i], hpf_800_coefs, hpf_x_history, hpf_y_history);
-			sampleBuffer[LEFT_SIDE_CH][i] = preGain1 * second_order_IIR(sampleBuffer[LEFT_CH][i], bpf_coefs, bpf_x_history, bpf_y_history);
-			sampleBuffer[RIGHT_SIDE_CH][i] = preGain2 * second_order_IIR(sampleBuffer[LEFT_CH][i], bpf2_coefs, bpf2_x_history, bpf2_y_history);
-			sampleBuffer[RIGHT_CH][i] = preGain2 * second_order_IIR(sampleBuffer[LEFT_CH][i], hpf2_800_coefs, hpf2_x_history, hpf2_y_history);
-			sampleBuffer[LFE_CH][i] = preGain2 * second_order_IIR(sampleBuffer[LEFT_CH][i], lpf2_18k_coefs, lpf2_x_history, lpf2_y_history);
-			sampleBuffer[LEFT_CH][i] = preGain1 * second_order_IIR(sampleBuffer[LEFT_CH][i], lpf_18k_coefs, lpf_x_history, lpf_y_history);
+			sampleBuffer[CENTER_CH][i] =second_order_IIR(preGain1 * sampleBuffer[LEFT_CH][i], hpf_800_coefs, hpf_x_history, hpf_y_history);
+			sampleBuffer[LEFT_SIDE_CH][i] = second_order_IIR(preGain1 * sampleBuffer[LEFT_CH][i], bpf_coefs, bpf_x_history, bpf_y_history);
+			sampleBuffer[RIGHT_SIDE_CH][i] = second_order_IIR(preGain2 * sampleBuffer[LEFT_CH][i], bpf2_coefs, bpf2_x_history, bpf2_y_history);
+			sampleBuffer[RIGHT_CH][i] =second_order_IIR(preGain2 * sampleBuffer[LEFT_CH][i], hpf2_800_coefs, hpf2_x_history, hpf2_y_history);
+			sampleBuffer[LFE_CH][i] = second_order_IIR(preGain2 * sampleBuffer[LEFT_CH][i], lpf2_18k_coefs, lpf2_x_history, lpf2_y_history);
+			sampleBuffer[LEFT_CH][i] =second_order_IIR(preGain1 * sampleBuffer[LEFT_CH][i], lpf_18k_coefs, lpf_x_history, lpf_y_history);
 		}
 	}
 }
@@ -213,6 +213,7 @@ int main(int argc, char* argv[])
 					sampleBuffer[k][j] = sample / SAMPLE_SCALE;				 // scale sample to 1.0/-1.0 range		
 				}
 			}
+		
 			if (enable) {
 				processing();
 			}
@@ -226,6 +227,7 @@ int main(int argc, char* argv[])
 					fwrite(&sample, outputWAVhdr.fmt.BitsPerSample / 8, 1, wav_out);
 				}
 			}
+			fflush(wav_out);
 		}
 	}
 

@@ -7,12 +7,12 @@
 #include "common.h"
 
 // Filter coeficients
-static DSPfract lpf_18k_coefs[] = { FRACT_NUM(0.6828), FRACT_NUM(1.3657/2), FRACT_NUM(0.6828), FRACT_NUM(1.0), FRACT_NUM(1.1314/2), FRACT_NUM(0.6) };
-static DSPfract hpf_800_coefs[] = { FRACT_NUM(0.9617), FRACT_NUM(-1.9234/2), FRACT_NUM(0.9617), FRACT_NUM(1.0), FRACT_NUM(-1.9182/2), FRACT_NUM(0.9287) };
+static DSPfract lpf_18k_coefs[] = { FRACT_NUM(0.6632), FRACT_NUM(1.3264 /2), FRACT_NUM(0.6632), FRACT_NUM(1.0), FRACT_NUM(1.2095 /2), FRACT_NUM(0.4432) };
+static DSPfract hpf_800_coefs[] = { FRACT_NUM(0.9223), FRACT_NUM(-1.8447 /2), FRACT_NUM(0.9223), FRACT_NUM(1.0), FRACT_NUM(-1.8391 /2), FRACT_NUM(0.8511) };
 static DSPfract bpf_coefs[] = { FRACT_NUM(0.4139), FRACT_NUM(0.0), FRACT_NUM(-0.4139), FRACT_NUM(1.0), FRACT_NUM(-0.6384/2), FRACT_NUM(0.1722) };
 static DSPfract bpf2_coefs[] = { FRACT_NUM(0.4139), FRACT_NUM(0.0), FRACT_NUM(-0.4139), FRACT_NUM(1.0), FRACT_NUM(-0.6384/2), FRACT_NUM(0.1722) };
-static DSPfract hpf2_800_coefs[] = { FRACT_NUM(0.9617), FRACT_NUM(-1.9234 / 2), FRACT_NUM(0.9617), FRACT_NUM(1.0), FRACT_NUM(-1.9182 / 2), FRACT_NUM(0.9287) };
-static DSPfract lpf2_18k_coefs[] = { FRACT_NUM(0.6828), FRACT_NUM(1.3657 / 2), FRACT_NUM(0.6828), FRACT_NUM(1.0), FRACT_NUM(1.1314 / 2), FRACT_NUM(0.6) };
+static DSPfract hpf2_800_coefs[] = { FRACT_NUM(0.9223), FRACT_NUM(-1.8447 / 2), FRACT_NUM(0.9223), FRACT_NUM(1.0), FRACT_NUM(-1.8391 / 2), FRACT_NUM(0.8511) };
+static DSPfract lpf2_18k_coefs[] = { FRACT_NUM(0.6632), FRACT_NUM(1.3264 / 2), FRACT_NUM(0.6632), FRACT_NUM(1.0), FRACT_NUM(1.2095 / 2), FRACT_NUM(0.4432) };
 
 // History
 static DSPfract lpf_x_history[2];
@@ -33,7 +33,7 @@ static DSPfract sampleBuffer[MAX_NUM_CHANNEL][BLOCK_SIZE];
 
 // Controls
 static DSPint enable = 1;
-static DSPint mode = 1;
+static DSPint mode = 0;
 
 // Processing related variables
 static DSPfract preGain1 = MINUS_3DB;
@@ -191,7 +191,7 @@ DSPint main(DSPint argc, char* argv[])
 	// Write output WAV header to file
 	//-------------------------------------------------
 	WriteWavHeader(wav_out, outputWAVhdr);
-
+	init_history();	
 
 	// Processing loop
 	//-------------------------------------------------	
@@ -216,7 +216,7 @@ DSPint main(DSPint argc, char* argv[])
 			}
 
 			if (enable) {
-				init_history();
+			
 				processing();
 			}
 
