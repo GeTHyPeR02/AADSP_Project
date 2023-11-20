@@ -39,7 +39,7 @@ static DSPint mode = 0;
 static DSPfract preGain1 = MINUS_3DB;
 static DSPfract preGain2 = MINUS_3DB;
 
-void init_history()
+void initHistory()
 {
 	for (int i = 0; i < 2; i++)
 	{
@@ -71,11 +71,11 @@ void processing()
 	if (!mode) {
 		for (i = 0; i < BLOCK_SIZE; i++)
 		{
-			*sampleBuffer_center = second_order_IIR(preGain1 * (DSPfract)*sampleBuffer_left, lpf_18k_coefs, lpf_x_history, lpf_y_history);
-			*sampleBuffer_leftSide = second_order_IIR(preGain1 * (DSPfract)*sampleBuffer_left, hpf_800_coefs, hpf_x_history, hpf_y_history);
-			*sampleBuffer_rightSide = second_order_IIR(preGain2 * (DSPfract)*sampleBuffer_left, bpf_coefs, bpf_x_history, bpf_y_history);
-			*sampleBuffer_right = second_order_IIR(preGain2 * (DSPfract)*sampleBuffer_left, bpf2_coefs, bpf2_x_history, bpf2_y_history);
-			*sampleBuffer_lfe = second_order_IIR(preGain2 * (DSPfract)*sampleBuffer_left, hpf2_800_coefs, hpf2_x_history, hpf2_y_history);
+			*sampleBuffer_center = (DSPfract)second_order_IIR(preGain1 * (DSPfract)*sampleBuffer_left, lpf_18k_coefs, lpf_x_history, lpf_y_history);
+			*sampleBuffer_leftSide = (DSPfract)second_order_IIR(preGain1 * (DSPfract)*sampleBuffer_left, hpf_800_coefs, hpf_x_history, hpf_y_history);
+			*sampleBuffer_rightSide = (DSPfract)second_order_IIR(preGain2 * (DSPfract)*sampleBuffer_left, bpf_coefs, bpf_x_history, bpf_y_history);
+			*sampleBuffer_right = (DSPfract)second_order_IIR(preGain2 * (DSPfract)*sampleBuffer_left, bpf2_coefs, bpf2_x_history, bpf2_y_history);
+			*sampleBuffer_lfe = (DSPfract)second_order_IIR(preGain2 * (DSPfract)*sampleBuffer_left, hpf2_800_coefs, hpf2_x_history, hpf2_y_history);
 			*sampleBuffer_left = preGain1 * (DSPfract)*sampleBuffer_left;
 
 			sampleBuffer_center++;
@@ -89,12 +89,12 @@ void processing()
 	else{
 		for (i = 0; i < BLOCK_SIZE; i++)
 		{
-			*sampleBuffer_center = second_order_IIR(preGain1 * (DSPfract)*sampleBuffer_left, hpf_800_coefs, hpf_x_history, hpf_y_history);
-			*sampleBuffer_leftSide = second_order_IIR(preGain1 * (DSPfract)*sampleBuffer_left, bpf_coefs, bpf_x_history, bpf_y_history);
-			*sampleBuffer_rightSide = second_order_IIR(preGain2 * (DSPfract)*sampleBuffer_left, bpf2_coefs, bpf2_x_history, bpf2_y_history);
-			*sampleBuffer_right = second_order_IIR(preGain2 * (DSPfract)*sampleBuffer_left, hpf2_800_coefs, hpf2_x_history, hpf2_y_history);
-			*sampleBuffer_lfe = second_order_IIR(preGain2 * (DSPfract)*sampleBuffer_left, lpf2_18k_coefs, lpf2_x_history, lpf2_y_history);
-			*sampleBuffer_left = second_order_IIR(preGain1 * (DSPfract)*sampleBuffer_left, lpf_18k_coefs, lpf_x_history, lpf_y_history);
+			*sampleBuffer_center = (DSPfract)second_order_IIR(preGain1 * (DSPfract)*sampleBuffer_left, hpf_800_coefs, hpf_x_history, hpf_y_history);
+			*sampleBuffer_leftSide = (DSPfract)second_order_IIR(preGain1 * (DSPfract)*sampleBuffer_left, bpf_coefs, bpf_x_history, bpf_y_history);
+			*sampleBuffer_rightSide = (DSPfract)second_order_IIR(preGain2 * (DSPfract)*sampleBuffer_left, bpf2_coefs, bpf2_x_history, bpf2_y_history);
+			*sampleBuffer_right = (DSPfract)second_order_IIR(preGain2 * (DSPfract)*sampleBuffer_left, hpf2_800_coefs, hpf2_x_history, hpf2_y_history);
+			*sampleBuffer_lfe = (DSPfract)second_order_IIR(preGain2 * (DSPfract)*sampleBuffer_left, lpf2_18k_coefs, lpf2_x_history, lpf2_y_history);
+			*sampleBuffer_left = (DSPfract)second_order_IIR(preGain1 * (DSPfract)*sampleBuffer_left, lpf_18k_coefs, lpf_x_history, lpf_y_history);
 
 			sampleBuffer_center++;
 			sampleBuffer_leftSide++;
@@ -174,6 +174,7 @@ DSPint main(DSPint argc, char* argv[])
 	ReadWavHeader(wav_in, inputWAVhdr);
 	//-------------------------------------------------
 
+
 	// Set up output WAV header
 	//-------------------------------------------------	
 	outputWAVhdr = inputWAVhdr;
@@ -191,7 +192,8 @@ DSPint main(DSPint argc, char* argv[])
 	// Write output WAV header to file
 	//-------------------------------------------------
 	WriteWavHeader(wav_out, outputWAVhdr);
-	init_history();	
+
+	initHistory();
 
 	// Processing loop
 	//-------------------------------------------------	

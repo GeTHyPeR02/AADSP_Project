@@ -11,9 +11,9 @@
  *************************************/
 #include "common.h"
 
-DSPfract second_order_IIR(DSPfract input, DSPfract* coefficients, DSPfract* x_history, DSPfract* y_history) {
-	DSPfract output = 0;
-	DSPfract pom = 0;
+DSPaccum second_order_IIR(DSPfract input, DSPfract* coefficients, DSPfract* x_history, DSPfract* y_history) {
+	DSPaccum output = 0;
+	DSPaccum pom = 0;
 	DSPfract* x = x_history;
 	DSPfract* y = y_history;
 	

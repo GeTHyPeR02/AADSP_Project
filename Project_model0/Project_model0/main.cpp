@@ -56,6 +56,7 @@ static int mode = 0;
 static double preGain1 = MINUS_3DB;
 static double preGain2 = MINUS_3DB;
 
+
 void initHistory()
 {
 	for (int i = 0; i < 2; i++)
@@ -98,7 +99,7 @@ void processing()
 			sampleBuffer[RIGHT_SIDE_CH][i] = second_order_IIR(preGain2 * sampleBuffer[LEFT_CH][i], bpf2_coefs, bpf2_x_history, bpf2_y_history);
 			sampleBuffer[RIGHT_CH][i] =second_order_IIR(preGain2 * sampleBuffer[LEFT_CH][i], hpf2_800_coefs, hpf2_x_history, hpf2_y_history);
 			sampleBuffer[LFE_CH][i] = second_order_IIR(preGain2 * sampleBuffer[LEFT_CH][i], lpf2_18k_coefs, lpf2_x_history, lpf2_y_history);
-			sampleBuffer[LEFT_CH][i] =second_order_IIR(preGain1 * sampleBuffer[LEFT_CH][i], lpf_18k_coefs, lpf_x_history, lpf_y_history);
+			sampleBuffer[LEFT_CH][i] = second_order_IIR(preGain1 * sampleBuffer[LEFT_CH][i], lpf_18k_coefs, lpf_x_history, lpf_y_history);
 		}
 	}
 }
@@ -148,6 +149,7 @@ int main(int argc, char* argv[])
 		}
 	}
 
+
 	FILE* wav_in = NULL;
 	FILE* wav_out = NULL;
 	char WavInputName[256];
@@ -157,8 +159,6 @@ int main(int argc, char* argv[])
 	// Init channel buffers
 	for (int i = 0; i < MAX_NUM_CHANNEL; i++)
 		memset(&sampleBuffer[i], 0, BLOCK_SIZE);
-
-	initHistory();
 
 	// Open input and output wav files
 	//-------------------------------------------------
@@ -191,6 +191,7 @@ int main(int argc, char* argv[])
 	//-------------------------------------------------
 	WriteWavHeader(wav_out, outputWAVhdr);
 
+	initHistory();
 
 	// Processing loop
 	//-------------------------------------------------	

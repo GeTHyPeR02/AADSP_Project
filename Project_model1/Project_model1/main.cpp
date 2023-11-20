@@ -56,8 +56,7 @@ static int mode = 0;
 static double preGain1 = MINUS_3DB;
 static double preGain2 = MINUS_3DB;
 
-
-void init_history()
+void initHistory()
 {
 	for (int i = 0; i < 2; i++)
 	{
@@ -75,7 +74,6 @@ void init_history()
 		bpf2_y_history[i] = 0;
 	}
 }
-
 
 void processing()
 {
@@ -193,6 +191,8 @@ int main(int argc, char* argv[])
 	ReadWavHeader(wav_in, inputWAVhdr);
 	//-------------------------------------------------
 
+	initHistory();
+
 	// Set up output WAV header
 	//-------------------------------------------------	
 	outputWAVhdr = inputWAVhdr;
@@ -210,7 +210,6 @@ int main(int argc, char* argv[])
 	// Write output WAV header to file
 	//-------------------------------------------------
 	WriteWavHeader(wav_out, outputWAVhdr);
-	init_history();
 
 	// Processing loop
 	//-------------------------------------------------	
