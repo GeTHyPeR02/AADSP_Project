@@ -11,6 +11,7 @@
 // Number of channels
 #define INPUT_NUM_CHANNELS 1
 #define OUTPUT_NUM_CHANNELS 6
+#define OUTPUT_NUM_CHANNELS_DISABLE 2;
 
 // Channel IDs
 #define LEFT_CH 0
@@ -196,8 +197,14 @@ int main(int argc, char* argv[])
 	// Set up output WAV header
 	//-------------------------------------------------	
 	outputWAVhdr = inputWAVhdr;
-	outputWAVhdr.fmt.NumChannels = OUTPUT_NUM_CHANNELS; // change number of channels
 
+	if (enable) {
+		outputWAVhdr.fmt.NumChannels = OUTPUT_NUM_CHANNELS; // change number of channels
+
+	}
+	else {
+		outputWAVhdr.fmt.NumChannels = OUTPUT_NUM_CHANNELS_DISABLE; // change number of channels
+	}
 	int oneChannelSubChunk2Size = inputWAVhdr.data.SubChunk2Size / inputWAVhdr.fmt.NumChannels;
 	int oneChannelByteRate = inputWAVhdr.fmt.ByteRate / inputWAVhdr.fmt.NumChannels;
 	int oneChannelBlockAlign = inputWAVhdr.fmt.BlockAlign / inputWAVhdr.fmt.NumChannels;

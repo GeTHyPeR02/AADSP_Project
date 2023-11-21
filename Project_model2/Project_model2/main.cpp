@@ -177,8 +177,15 @@ DSPint main(DSPint argc, char* argv[])
 
 	// Set up output WAV header
 	//-------------------------------------------------	
-	outputWAVhdr = inputWAVhdr;
-	outputWAVhdr.fmt.NumChannels = OUTPUT_NUM_CHANNELS; // change number of channels
+	outputWAVhdr = inputWAVhdr;	
+	
+	if (enable) {
+		outputWAVhdr.fmt.NumChannels = OUTPUT_NUM_CHANNELS; // change number of channels
+
+	}
+	else {
+		outputWAVhdr.fmt.NumChannels = OUTPUT_NUM_CHANNELS_DISABLE; // change number of channels
+	}
 
 	int oneChannelSubChunk2Size = inputWAVhdr.data.SubChunk2Size / inputWAVhdr.fmt.NumChannels;
 	int oneChannelByteRate = inputWAVhdr.fmt.ByteRate / inputWAVhdr.fmt.NumChannels;
